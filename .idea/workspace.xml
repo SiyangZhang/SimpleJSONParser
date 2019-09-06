@@ -31,8 +31,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/SimpleJSONLoader.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="144">
-              <caret line="235" column="21" lean-forward="true" selection-start-line="235" selection-start-column="21" selection-end-line="235" selection-end-column="21" />
+            <state relative-caret-position="232">
+              <caret line="165" column="17" lean-forward="true" selection-start-line="165" selection-start-column="17" selection-end-line="165" selection-end-column="17" />
               <folding>
                 <element signature="imports" expanded="true" />
                 <element signature="e#543#544#0" expanded="true" />
@@ -69,6 +69,11 @@
         <option value="Class" />
       </list>
     </option>
+  </component>
+  <component name="FindInProjectRecents">
+    <findStrings>
+      <find>parseToken</find>
+    </findStrings>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -182,7 +187,7 @@
       <window_info anchor="bottom" id="Messages" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.51666665" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -227,8 +232,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/SimpleJSONLoader.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="144">
-          <caret line="235" column="21" lean-forward="true" selection-start-line="235" selection-start-column="21" selection-end-line="235" selection-end-column="21" />
+        <state relative-caret-position="232">
+          <caret line="165" column="17" lean-forward="true" selection-start-line="165" selection-start-column="17" selection-end-line="165" selection-end-column="17" />
           <folding>
             <element signature="imports" expanded="true" />
             <element signature="e#543#544#0" expanded="true" />

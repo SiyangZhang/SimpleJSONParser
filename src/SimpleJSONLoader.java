@@ -18,12 +18,15 @@ public class SimpleJSONLoader {
 
     Map<String, Object> dataMap;
 
+    boolean jumpWhiteSpace;
+
 
     public SimpleJSONLoader(){
         cursor = 0;
         input = "";
         buffer = "";
         dataMap = new HashMap<>();
+        jumpWhiteSpace = true;
     }
 
     public SimpleJSONLoader(String input){
@@ -31,17 +34,18 @@ public class SimpleJSONLoader {
         this.input = input+"?";
         buffer = "";
         dataMap = new HashMap<>();
+        jumpWhiteSpace = true;
     }
     public char peek(){
         return input.charAt(cursor);
     }
 
     public char match(char c) throws Exception{
-        consumeWhiteSpace();
+        if(jumpWhiteSpace) consumeWhiteSpace();
         if(c == peek()){
             cursor ++;
             System.out.println("match: " + c);
-            consumeWhiteSpace();
+            if(jumpWhiteSpace) consumeWhiteSpace();
             return c;
         }else{
             throw new Exception("Mismatch: expect '" + c + "', but see '" + peek() + "'.");
@@ -156,9 +160,11 @@ public class SimpleJSONLoader {
         switch (start){
             case '"':
                 res += match('"');
+                jumpWhiteSpace = false;
                 while(peek() != '"'){
                     res += freeMatch();
                 }
+                jumpWhiteSpace = true;
                 res += match('"');
                 break;
             case '{':
@@ -211,9 +217,11 @@ public class SimpleJSONLoader {
 
     public String parseToken() throws Exception{
         String token = "";
+        jumpWhiteSpace = false;
         while(isLegal(peek()) || peek() == ' '){
             token += freeMatch();
         }
+        jumpWhiteSpace = true;
         return token;
     }
 
@@ -242,17 +250,18 @@ public class SimpleJSONLoader {
 
 
     public static void main(String[] args){
-        String input = "{\"abc\" : 12.34,\"list\" : [1,{ \"name\":\"YJSNP\",\"nationality\" : \"Japanese\",\"party info\":" +
-                "{ \"party name\" : \"black tea\",\"lucky numbers\":[114514,1919810]}},3,4,5],\"age\":18}";
+        String input = "{\"abc\" : 12.34," +
+                "\"list\" : [1,{ \"name\":\"YJSNP\",\"nationality\" : \"Japanese\",\"party info\":" +
+                "{ \"party name\" : \"black tea\",\"lucky numbers\":[114514,1919810]}},3,4,5]," +
+                "\"age\":18}";
+
         SimpleJSONLoader parser = new SimpleJSONLoader(input);
 
         try{
             parser.parse();
             System.out.println("\n-----------------------------------------------------");
             Map<String, Object> map = parser.dataMap;
-            for(String key : map.keySet()){
-                System.out.println(key + "   " + map.get(key));
-            }
+            System.out.println(map);
         }catch(Exception e){
             System.out.println(parser.input.substring(0,parser.cursor));
             System.out.println(parser.cursor);
