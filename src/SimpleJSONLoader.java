@@ -1,4 +1,6 @@
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -73,53 +75,68 @@ public class SimpleJSONLoader {
         return isLetter(c) || isDigit(c) || c == '_';
     }
 
-    public String parse() throws Exception{
-        return parseJSON("");
+    public void parse() throws Exception{
+        dataMap = parseJSON("");
     }
 
 
-    public String parseJSON(String buffer) throws Exception{
+    public Map<String,Object> parseJSON(String buffer) throws Exception{
+        Map<String,Object> map = new HashMap<>();
+        match('{');
 
-        String left = "" + match('{');
-        String oldbuffer = buffer;
-        buffer += "\t";
         if(peek() == '"'){
-            String tuplelist = parseTupleList(buffer);
-            String right = "" + match('}');
-            return left + "\n" + buffer + tuplelist + "\n" + oldbuffer + right;
+            List<Tuple<Object>> tuplelist = parseTupleList(buffer);
+            match('}');
+            for(int i = 0; i < tuplelist.size(); i++){
+                Tuple<Object> tuple = tuplelist.get(i);
+                map.put(tuple.getKey(), tuple.getValue());
+            }
+            return map;
         }else{
-            left += match('}');
-            return left;
+            match('}');
         }
+
+        return map;
     }
 
-    public String parseTupleList(String buffer) throws Exception{
-        String first = parseTuple(buffer);
-        String rest = parseTupleListTail(buffer);
-        return first + rest;
+    public List<Tuple<Object>> parseTupleList(String buffer) throws Exception{
+        Tuple<Object> first = parseTuple(buffer);
+        List<Tuple<Object>> rest = parseTupleListTail(buffer);
+        if(rest.size() == 0){
+            rest.add(first);
+            return rest;
+        }
+        rest.add(0,first);
+        return rest;
 
     }
 
-    public String parseTuple(String buffer) throws Exception{
+    public Tuple<Object> parseTuple(String buffer) throws Exception{
+
+        String key = parseKey();
+        match(':');
+        Object value = parseValue(buffer);
+        return new Tuple<>(key, value);
+    }
+
+    public List<Tuple<Object>> parseTupleListTail(String buffer) throws Exception{
         String res = "";
-        res += parseKey();
-        res += match(':');
-        res += parseValue(buffer);
-        return res;
-    }
-
-    public String parseTupleListTail(String buffer) throws Exception{
-        String res = "";
+        List<Tuple<Object>> list = new ArrayList<>();
         if(peek() == ','){
-            System.out.println("buffer length: " + buffer.length());
-            res += match(',')+"\n"+buffer;
-            res += parseTuple(buffer);
-            res += parseTupleListTail(buffer);
+            match(',');
+            Tuple<Object> tuple = parseTuple(buffer);
+            List<Tuple<Object>> tail =  parseTupleListTail(buffer);
+            if(tail.size() == 0){
+                tail.add(tuple);
+                return tail;
+            }else{
+                tail.add(0,tuple);
+                return tail;
+            }
         }else{
-            return "";
+            return list;
         }
 
-        return res;
     }
 
     public String parseKey() throws Exception{
@@ -130,7 +147,7 @@ public class SimpleJSONLoader {
         return key;
     }
 
-    public String parseValue(String buffer) throws Exception{
+    public Object parseValue(String buffer) throws Exception{
         String res = "";
         char start = peek();
         switch (start){
@@ -145,8 +162,9 @@ public class SimpleJSONLoader {
                 res += parseJSON(buffer);
                 break;
             case '[':
-                res += parseList(buffer);
-                break;
+                List<Object> list = parseList(buffer);
+                res += list.toString();
+                return list;
             default:
                 if(isDigit(peek())){
                     res += parseNumber();
@@ -159,27 +177,29 @@ public class SimpleJSONLoader {
         return res;
     }
 
-    public String parseList(String buffer) throws Exception{
-        String res = "";
-        res += "\n" + buffer + match('[');
-        String oldbuffer = buffer;
-        buffer += "\t";
-        res += "\n" + buffer + parseValue(buffer);
-        res += parseListTail(buffer);
-        res += "\n" + oldbuffer + match(']');
-        return res;
+    public List<Object> parseList(String buffer) throws Exception{
+
+        List<Object> list = new ArrayList<>();
+        match('[');
+
+        Object value = parseValue(buffer);
+        list.add(value);
+        parseListTail(list);
+        match(']');
+
+        return list;
     }
 
 
 
-    public String parseListTail(String buffer) throws Exception{
+    public String parseListTail(List<Object> list) throws Exception{
 
         char start = peek();
         String res = "";
         if(start == ','){
-            res += match(',')+"\n";
-            res += buffer + parseValue(buffer);
-            res += parseListTail(buffer);
+            match(',');
+            list.add(parseValue(buffer));
+            parseListTail(list);
         }else{
             return "";
         }
@@ -203,24 +223,33 @@ public class SimpleJSONLoader {
         }
     }
 
-    public String parseNumber() throws Exception{
+    public Number parseNumber() throws Exception{
         String num = "";
-        while(isDigit(peek())){
+        while(isDigit(peek()) || peek() == '.'){
             num += freeMatch();
         }
-        return num;
+        try{
+            int s = Integer.parseInt(num);
+            return s;
+        }catch(NumberFormatException ex){
+            double d = Double.parseDouble(num);
+            return d;
+        }
     }
 
 
     public static void main(String[] args){
-        String input = "{\"abc\":\"123\",\"list\":[1,{\"name\":\"YJSNP\",\"nationality\":\"Japanese\",\"party info\":" +
+        String input = "{\"abc\":12.34,\"list\":[1,{\"name\":\"YJSNP\",\"nationality\":\"Japanese\",\"party info\":" +
                 "{\"party name\":\"black tea\",\"lucky numbers\":[114514,1919810]}},3,4,5],\"age\":18}";
         SimpleJSONLoader parser = new SimpleJSONLoader(input);
 
         try{
-            String res = parser.parse();
+            parser.parse();
             System.out.println("\n-----------------------------------------------------");
-            System.out.println(res);
+            Map<String, Object> map = parser.dataMap;
+            for(String key : map.keySet()){
+                System.out.println(key + "   " + map.get(key));
+            }
         }catch(Exception e){
             System.out.println(parser.input.substring(0,parser.cursor));
             System.out.println(parser.cursor);
